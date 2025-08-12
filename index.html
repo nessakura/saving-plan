@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบออมเงินรายวัน (เวอร์ชันสมบูรณ์)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+            line-height: 1.5;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .icon {
+            width: 24px;
+            height: 24px;
+            display: inline-block;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .input-field {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #495057;
+            border: 2px solid #e1e5e9;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+            border-color: #adb5bd;
+        }
+
+        .progress-container {
+            margin: 24px 0;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: #e1e5e9;
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 6px;
+            transition: width 0.8s ease;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 24px 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .message-box {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin: 24px 0;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .savings-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border-radius: 8px;
+            border: 1px solid #e1e5e9;
+        }
+
+        .savings-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid #f1f3f4;
+            transition: background-color 0.3s ease;
+        }
+
+        .savings-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .savings-item:last-child {
+            border-bottom: none;
+        }
+
+        .savings-date {
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .savings-amount {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .input-row {
+                flex-direction: column;
+            }
+
+            .input-field {
+                min-width: 100%;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💰 ระบบออมเงินรายวัน</h1>
+            <p>ทำให้การเก็บเงินสนุกขึ้น พร้อมข้อความให้กำลังใจตามความคืบหน้า!</p>
+        </div>
+
+        <div class="card">
+            <div class="card-title">
+                <span class="icon">📝</span>
+                บันทึกรายวัน
+            </div>
+            <div class="input-group">
+                <div class="input-row">
+                    <label>รายได้วันนี้:</label>
+                    <input type="number" id="income" value="500" class="input-field" placeholder="0">
+                    <span>บาท</span>
+                </div>
+                <div class="input-row">
+                    <label>รายจ่ายวันนี้:</label>
+                    <input type="number" id="expense" value="0" class="input-field" placeholder="0">
+                    <span>บาท</span>
+                </div>
+                <div class="input-row">
+                    <button id="addSavingBtn" class="btn btn-primary">
+                        ✅ บันทึกการออมวันนี้
+                    </button>
+                    <button id="resetTodayBtn" class="btn btn-danger hidden">
+                        🔄 รีเซ็ตวันนี้
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">
+                <span class="icon">📊</span>
+                สรุปเดือนนี้
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalSaving">0</div>
+                    <div class="stat-label">ยอดออมรวม (บาท)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="goalAmount">10,000</div>
+                    <div class="stat-label">เป้าหมายเดือนนี้ (บาท)</div>
+                </div>
+            </div>
+
+            <div class="input-row" style="margin-bottom: 20px;">
+                <label>เป้าหมายเดือนนี้:</label>
+                <input type="number" id="goalInput" value="10000" class="input-field" placeholder="ระบุเป้าหมาย">
+                <span>บาท</span>
+                <button id="setGoalBtn" class="btn btn-secondary">ตั้งเป้าใหม่</button>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-info">
+                    <span>ความคืบหน้า</span>
+                    <span id="progressText">0%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="message-box" id="message">
+                มาเริ่มออมกันเถอะ วันนี้วันดีของเรา!
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">
+                <span class="icon">📋</span>
+                รายการออมเดือนนี้
+            </div>
+            <div class="savings-list" id="savingsList">
+                <div style="text-align: center; padding: 40px; color: #999;">
+                    ยังไม่มีรายการออม
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DOM Elements ---
+        const totalSavingEl = document.getElementById('totalSaving');
+        const goalAmountEl = document.getElementById('goalAmount');
+        const goalInputEl = document.getElementById('goalInput');
+        const progressFillEl = document.getElementById('progressFill');
+        const progressTextEl = document.getElementById('progressText');
+        const messageBoxEl = document.getElementById('message');
+        const savingsListEl = document.getElementById('savingsList');
+        const resetTodayBtn = document.getElementById('resetTodayBtn');
+        const incomeInput = document.getElementById('income');
+        const expenseInput = document.getElementById('expense');
+        const addSavingBtn = document.getElementById('addSavingBtn');
+        const setGoalBtn = document.getElementById('setGoalBtn');
+
+        // --- State Variables ---
+        let savings = JSON.parse(localStorage.getItem('savings')) || [];
+        let goal = parseInt(localStorage.getItem('goal')) || 10000;
+
+        // --- ชุดข้อความให้กำลังใจ 1-100% ---
+        const motivationalMessages = [
+            // 0%
+            "🚀 มาเริ่มออมกันเถอะ วันนี้วันดีของเรา!",
+            // 1-10%
+            "1% แล้ว! ก้าวแรกสำคัญเสมอ เริ่มต้นได้สวยงาม!", "2% แล้ว! ยอดเยี่ยมไปเลย ค่อยๆ เก็บไปนะ", "3% แล้ว! ไปต่อเลยที่รัก กำลังมาถูกทางแล้ว", "4% แล้ว! เห็นมั้ยว่าเธอทำได้ สู้ๆ", "5% แล้ว! เป็นการเริ่มต้นที่ดีมากๆ!", "6% แล้ว! เครื่องเริ่มติดแล้วนะ", "7% แล้ว! ออมทุกวัน เก่งขึ้นทุกวัน", "8% แล้ว! สุดยอดไปเลย", "9% แล้ว! อีกนิดเดียวจะครบ 10% แล้วนะ", "10% แล้ว! ว้าว 10% แรกสำเร็จ! เก่งที่สุดเลย!",
+            // 11-20%
+            "11% แล้ว! ไปต่อกันเลยนะ!", "12% แล้ว! ยิ่งออม ยิ่งมีกำลังใจ", "13% แล้ว! ภูมิใจในความสม่ำเสมอของเธอนะ", "14% แล้ว! เยี่ยมไปเลย!", "15% แล้ว! ค่อยๆ เติบโตไปเรื่อยๆ", "16% แล้ว! มองเห็นความตั้งใจของเธอเลย", "17% แล้ว! เธอเก่งกว่าที่คิดนะรู้มั้ย", "18% แล้ว! เยี่ยมมาก!", "19% แล้ว! จะถึง 20% แล้วนะ สู้ๆ", "20% แล้ว! 🌱 สำเร็จไป 1 ใน 5 แล้วนะ เก่งมากๆ!",
+            // 21-30%
+            "21% แล้ว! หนทางยังอีกยาวไกล แต่เธอมาไกลแล้วนะ", "22% แล้ว! ทำได้ดีมากเลย", "23% แล้ว! มีวินัยสุดๆ เลยที่รัก", "24% แล้ว! ยอดเยี่ยม!", "25% แล้ว! ✨ สำเร็จ 1 ใน 4 แล้ว! สุดยอดไปเลย!", "26% แล้ว! เดินหน้าต่อไป!", "27% แล้ว! ความพยายามอยู่ที่ไหน ความสำเร็จอยู่ที่นั่น", "28% แล้ว! เก่งมากเลย", "29% แล้ว! อีกนิดเดียวจะถึง 30% แล้วนะ", "30% แล้ว! มาไกลมากแล้วนะ ภูมิใจในตัวเธอจัง",
+            // 31-40%
+            "31% แล้ว! ไปต่อกันเลย!", "32% แล้ว! ยอดเยี่ยมที่สุด", "33% แล้ว! เลขสวย! ไปต่อเลยนะ", "34% แล้ว! ทำได้ดีมาก!", "35% แล้ว! เธอสุดยอดมาก", "36% แล้ว! เก่งขึ้นทุกวันเลยนะ", "37% แล้ว! ยอดเยี่ยม!", "38% แล้ว! รักในความพยายามของเธอจัง", "39% แล้ว! ใกล้ 40% แล้วนะ", "40% แล้ว! 💪 ใกล้จะครึ่งทางแล้วนะ! สู้ต่อไป!",
+            // 41-50%
+            "41% แล้ว! อีกนิดเดียวจะครึ่งทางแล้ว", "42% แล้ว! ทำได้ดีมาก!", "43% แล้ว! ไปต่อเลยนะคนเก่ง", "44% แล้ว! เธอทำได้แน่นอน", "45% แล้ว! เกือบครึ่งทางแล้วนะ!", "46% แล้ว! สุดยอดเลย!", "47% แล้ว! สู้ๆ นะที่รัก", "48% แล้ว! อีกแค่ 2% จะถึงครึ่งทาง!", "49% แล้ว! อีกก้าวเดียวจะถึง 50% แล้ว!", "50% แล้ว! ⭐ ครึ่งทางแล้วนะ! เธอสุดยอดมาก! ภูมิใจที่สุดเลย!",
+            // 51-60%
+            "51% แล้ว! ผ่านครึ่งทางมาแล้วนะ!", "52% แล้ว! ไปต่อเลย!", "53% แล้ว! ยอดเยี่ยม!", "54% แล้ว! โมเมนตัมกำลังมา", "55% แล้ว! เลขสวย! ไปต่อได้อีกไกลเลย", "56% แล้ว! เก่งมากๆ เลย", "57% แล้ว! เธอทำได้ดีเสมอเลย", "58% แล้ว! สุดยอด!", "59% แล้ว! ใกล้ 60% แล้วนะ!", "60% แล้ว! ⭐ เกินครึ่งมาไกลแล้วนะ เก่งมากจริงๆ!",
+            // 61-70%
+            "61% แล้ว! ไปต่อเลย!", "62% แล้ว! เห็นเป้าหมายอยู่ไม่ไกลแล้ว", "63% แล้ว! ทำได้ดีมาก!", "64% แล้ว! มีแรงไปต่ออีกเยอะเลย!", "65% แล้ว! ยอดเยี่ยม!", "66% แล้ว! เลขสวยอีกแล้ว! ไปต่อเลยนะ", "67% แล้ว! เธอเก่งมาก!", "68% แล้ว! สุดยอดเลยที่รัก", "69% แล้ว! อีกนิดเดียว 70% แล้ว", "70% แล้ว! มาไกลขนาดนี้แล้วนะ ต้องไปให้สุด!",
+            // 71-80%
+            "71% แล้ว! ไปต่อ!", "72% แล้ว! ทำได้ดี!", "73% แล้ว! ยอดเยี่ยม!", "74% แล้ว! เธอทำได้แน่นอน", "75% แล้ว! ✨ สำเร็จ 3 ใน 4 แล้ว! อีกนิดเดียวเอง!", "76% แล้ว! เข้าสู่ช่วงท้ายแล้วนะ", "77% แล้ว! เลขสวย! โชคดีกำลังมา!", "78% แล้ว! เก่งมาก!", "79% แล้ว! อีกนิดเดียวจะ 80% แล้ว", "80% แล้ว! 🔥 โอ้โห! 80% แล้วนะ อีกอึดใจเดียว!",
+            // 81-90%
+            "81% แล้ว! ไปต่อเลย!", "82% แล้ว! สุดยอดมาก!", "83% แล้ว! เธอทำได้ดีมาก", "84% แล้ว! ใกล้ความจริงแล้วนะ", "85% แล้ว! ยอดเยี่ยม!", "86% แล้ว! สู้ๆ นะ", "87% แล้ว! เก่งที่สุดเลย", "88% แล้ว! เลขมงคล! เฮงๆ รวยๆ", "89% แล้ว! อีกนิดเดียว 90% แล้ว!", "90% แล้ว! 🔥 เหลืออีกแค่ 10% สุดท้ายเท่านั้น! สู้!",
+            // 91-100%
+            "91% แล้ว! ใกล้มากแล้วนะ!", "92% แล้ว! ตื่นเต้นแทนเลย!", "93% แล้ว! เธอทำได้!", "94% แล้ว! สุดยอดไปเลย", "95% แล้ว! อีกแค่ 5% เท่านั้น!", "96% แล้ว! นับถอยหลังได้เลย", "97% แล้ว! เธอเก่งที่สุดเลยที่รัก!", "98% แล้ว! อีกแค่สองก้าวเท่านั้น!", "99% แล้ว! เหลือเชื่อ! อีกก้าวเดียวเท่านั้น!", "100% แล้ว! 🎉 ทะลุเป้าแล้ว! สุดยอดไปเลยที่รัก! เธอทำได้สำเร็จ!"
+        ];
+        
+        // --- Functions ---
+        function updateDisplay() {
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
+            const today = now.toISOString().split('T')[0];
+
+            const monthSavings = savings.filter(s => {
+                const sDate = new Date(s.date);
+                return sDate.getMonth() === currentMonth && sDate.getFullYear() === currentYear;
+            });
+            const total = monthSavings.reduce((sum, s) => sum + s.amount, 0);
+            
+            totalSavingEl.innerText = total.toLocaleString();
+            goalAmountEl.innerText = goal.toLocaleString();
+            goalInputEl.value = goal; 
+            
+            const progress = (goal > 0) ? (total / goal) * 100 : 0;
+            progressFillEl.style.width = Math.min(progress, 100) + '%';
+            progressTextEl.innerText = Math.round(progress) + '%';
+            
+            updateMessage(progress);
+            renderHistory(monthSavings);
+            
+            const hasToday = savings.some(s => s.date === today);
+            resetTodayBtn.classList.toggle('hidden', !hasToday);
+        }
+
+        function updateMessage(progress) {
+            let message = '';
+            let gradient = '';
+            const roundedProgress = Math.round(progress);
+
+            if (roundedProgress >= 100) {
+                gradient = 'linear-gradient(135deg, #10ac84, #1dd1a1)';
+            } else if (roundedProgress >= 90) {
+                gradient = 'linear-gradient(135deg, #ff9f43, #f39c12)';
+            } else if (roundedProgress >= 75) {
+                gradient = 'linear-gradient(135deg, #e67e22, #d35400)';
+            } else if (roundedProgress >= 50) {
+                gradient = 'linear-gradient(135deg, #27ae60, #2ecc71)';
+            } else if (roundedProgress >= 25) {
+                gradient = 'linear-gradient(135deg, #3498db, #2980b9)';
+            } else {
+                gradient = 'linear-gradient(135deg, #667eea, #764ba2)';
+            }
+
+            if (roundedProgress <= 0) {
+                message = motivationalMessages[0];
+            } else if (roundedProgress > 100) {
+                message = `ทะลุเป้าไป ${roundedProgress - 100}% แล้ว! ` + motivationalMessages[100];
+            } else {
+                message = motivationalMessages[roundedProgress];
+            }
+            
+            messageBoxEl.innerText = message;
+            messageBoxEl.style.background = gradient;
+        }
+
+        function renderHistory(monthSavings) {
+            if (monthSavings.length === 0) {
+                savingsListEl.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">ยังไม่มีรายการออม</div>';
+            } else {
+                savingsListEl.innerHTML = '';
+                monthSavings.slice().reverse().forEach(s => {
+                    const div = document.createElement('div');
+                    div.className = 'savings-item';
+                    div.innerHTML = `
+                        <span class="savings-date">${new Date(s.date).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                        <span class="savings-amount">+${s.amount.toLocaleString()} บาท</span>
+                    `;
+                    savingsListEl.appendChild(div);
+                });
+            }
+        }
+
+        function addSaving() {
+            const income = parseInt(incomeInput.value) || 0;
+            const expense = parseInt(expenseInput.value) || 0;
+            const amount = income - expense;
+            
+            if (amount <= 0) {
+                alert('โอ้ ไม่นะ! รายจ่ายมากกว่ารายได้ หรือไม่ได้ออมเลยวันนี้ ลองใหม่นะ!');
+                return;
+            }
+            
+            const today = new Date().toISOString().split('T')[0];
+            if (savings.some(s => s.date === today)) {
+                alert('เธอบันทึกวันนี้ไปแล้วนะ ลองรีเซ็ตแล้วบันทึกใหม่!');
+                return;
+            }
+            
+            savings.push({ date: today, amount: amount });
+            localStorage.setItem('savings', JSON.stringify(savings));
+            updateDisplay();
+            
+            const originalText = addSavingBtn.innerHTML;
+            const originalBg = addSavingBtn.style.background;
+            addSavingBtn.innerHTML = '✅ บันทึกสำเร็จ!';
+            addSavingBtn.style.background = 'linear-gradient(135deg, #27ae60, #2ecc71)';
+            setTimeout(() => {
+                addSavingBtn.innerHTML = originalText;
+                addSavingBtn.style.background = originalBg;
+            }, 2000);
+        }
+
+        function resetTodaySaving() {
+            if (confirm('ต้องการรีเซ็ตการออมวันนี้ใช่ไหม?')) {
+                const today = new Date().toISOString().split('T')[0];
+                savings = savings.filter(s => s.date !== today);
+                localStorage.setItem('savings', JSON.stringify(savings));
+                updateDisplay();
+            }
+        }
+
+        function setGoal() {
+            const newGoal = parseInt(goalInputEl.value);
+            if (newGoal > 0) {
+                goal = newGoal;
+                localStorage.setItem('goal', goal);
+                updateDisplay();
+                
+                const originalText = setGoalBtn.innerHTML;
+                setGoalBtn.innerHTML = '✅ ตั้งเป้าแล้ว!';
+                setGoalBtn.classList.remove('btn-secondary');
+                setGoalBtn.classList.add('btn-primary');
+                setTimeout(() => {
+                    setGoalBtn.innerHTML = originalText;
+                    setGoalBtn.classList.remove('btn-primary');
+                    setGoalBtn.classList.add('btn-secondary');
+                }, 2000);
+            } else {
+                alert('เป้าหมายต้องเป็นตัวเลขที่มากกว่า 0 นะครับ');
+            }
+        }
+
+        // --- Event Listeners ---
+        addSavingBtn.addEventListener('click', addSaving);
+        resetTodayBtn.addEventListener('click', resetTodaySaving);
+        setGoalBtn.addEventListener('click', setGoal);
+        
+        // --- Initial Load ---
+        document.addEventListener('DOMContentLoaded', updateDisplay);
+
+    </script>
+</body>
+</html>
