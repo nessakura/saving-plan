@@ -447,11 +447,16 @@
         ];
         
         // --- Functions ---
+        function getThaiDate() {
+            return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' });
+        }
+
         function updateDisplay() {
             const now = new Date();
-            const currentMonth = now.getMonth();
-            const currentYear = now.getFullYear();
-            const today = now.toISOString().split('T')[0];
+            const thaiDate = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }));
+            const currentMonth = thaiDate.getMonth();
+            const currentYear = thaiDate.getFullYear();
+            const today = getThaiDate();
 
             const monthSavings = savings.filter(s => {
                 const sDate = new Date(s.date);
@@ -514,7 +519,7 @@
                     const div = document.createElement('div');
                     div.className = 'savings-item';
                     div.innerHTML = `
-                        <span class="savings-date">${new Date(s.date).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                        <span class="savings-date">${new Date(s.date).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Bangkok' })}</span>
                         <span class="savings-amount">+${s.amount.toLocaleString()} บาท</span>
                     `;
                     savingsListEl.appendChild(div);
@@ -532,7 +537,7 @@
                 return;
             }
             
-            const today = new Date().toISOString().split('T')[0];
+            const today = getThaiDate();
             if (savings.some(s => s.date === today)) {
                 alert('เธอบันทึกวันนี้ไปแล้วนะ ลองรีเซ็ตแล้วบันทึกใหม่!');
                 return;
@@ -554,7 +559,7 @@
 
         function resetTodaySaving() {
             if (confirm('ต้องการรีเซ็ตการออมวันนี้ใช่ไหม?')) {
-                const today = new Date().toISOString().split('T')[0];
+                const today = getThaiDate();
                 savings = savings.filter(s => s.date !== today);
                 localStorage.setItem('savings', JSON.stringify(savings));
                 updateDisplay();
@@ -589,7 +594,6 @@
         
         // --- Initial Load ---
         document.addEventListener('DOMContentLoaded', updateDisplay);
-
     </script>
 </body>
 </html>
