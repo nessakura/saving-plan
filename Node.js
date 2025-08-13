@@ -1,5 +1,4 @@
 // server.js
-const GITHUB_TOKEN = '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'; // แทนที่ด้วย Personal Access Token ของคุณ
 const express = require('express');
 const fetch = require('node-fetch');
 const app = express();
