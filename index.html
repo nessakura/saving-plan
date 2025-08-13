@@ -364,6 +364,10 @@
                     <div class="stat-value" id="goalAmount">10,000</div>
                     <div class="stat-label">เป้าหมายเดือนนี้ (บาท)</div>
                 </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="remainingGoal">10,000</div>
+                    <div class="stat-label">เหลือถึงเป้าหมาย (บาท)</div>
+                </div>
             </div>
 
             <div class="input-row" style="margin-bottom: 20px;">
@@ -405,6 +409,7 @@
         // --- DOM Elements ---
         const totalSavingEl = document.getElementById('totalSaving');
         const goalAmountEl = document.getElementById('goalAmount');
+        const remainingGoalEl = document.getElementById('remainingGoal');
         const goalInputEl = document.getElementById('goalInput');
         const progressFillEl = document.getElementById('progressFill');
         const progressTextEl = document.getElementById('progressText');
@@ -463,9 +468,11 @@
                 return sDate.getMonth() === currentMonth && sDate.getFullYear() === currentYear;
             });
             const total = monthSavings.reduce((sum, s) => sum + s.amount, 0);
+            const remaining = Math.max(0, goal - total);
             
             totalSavingEl.innerText = total.toLocaleString();
             goalAmountEl.innerText = goal.toLocaleString();
+            remainingGoalEl.innerText = remaining.toLocaleString();
             goalInputEl.value = goal; 
             
             const progress = (goal > 0) ? (total / goal) * 100 : 0;
